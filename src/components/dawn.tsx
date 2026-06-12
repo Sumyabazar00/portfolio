@@ -10,6 +10,7 @@ import {
 } from "framer-motion";
 import { Mail, GitBranch } from "lucide-react";
 import { contact } from "@/lib/content";
+import { asset } from "@/lib/asset";
 import { Reveal } from "@/components/case-district";
 import WordReveal from "@/components/word-reveal";
 
@@ -31,7 +32,7 @@ export default function Dawn() {
         aria-hidden="true"
       >
         <Image
-          src="/journey/dawn.webp"
+          src={asset("/journey/dawn.webp")}
           alt=""
           fill
           sizes="100vw"

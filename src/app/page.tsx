@@ -8,6 +8,7 @@ import CaseDistrict from "@/components/case-district";
 import Overlook from "@/components/overlook";
 import Dawn from "@/components/dawn";
 import { insurePlatform, dreamBox } from "@/lib/content";
+import { asset } from "@/lib/asset";
 
 export default function Home() {
   return (
@@ -24,7 +25,7 @@ export default function Home() {
           index="01"
           data={insurePlatform}
           accent="insure"
-          image="/journey/district-insure.webp"
+          image={asset("/journey/district-insure.webp")}
         />
         <CaseDistrict
           id="dbox"
@@ -32,7 +33,7 @@ export default function Home() {
           index="02"
           data={dreamBox}
           accent="dbox"
-          image="/journey/district-dbox.webp"
+          image={asset("/journey/district-dbox.webp")}
         />
         <Overlook />
         <Dawn />

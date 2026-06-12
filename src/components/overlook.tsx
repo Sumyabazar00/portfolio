@@ -9,6 +9,7 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import { otherProjects, about } from "@/lib/content";
+import { asset } from "@/lib/asset";
 import { Reveal } from "@/components/case-district";
 import WordReveal from "@/components/word-reveal";
 
@@ -30,7 +31,7 @@ export default function Overlook() {
         aria-hidden="true"
       >
         <Image
-          src="/journey/overlook.webp"
+          src={asset("/journey/overlook.webp")}
           alt=""
           fill
           sizes="100vw"
