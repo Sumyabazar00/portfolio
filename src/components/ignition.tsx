@@ -11,6 +11,7 @@ import { ChevronDown } from "lucide-react";
 import { useScrollTo } from "@/components/smooth-scroll";
 
 const NAME = "SUMIYABAZAR";
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export default function Ignition() {
   const ref = useRef<HTMLElement>(null);
@@ -43,14 +44,14 @@ export default function Ignition() {
         >
           <video
           className="h-full w-full object-cover"
-          poster="/journey/keyframe-a.webp"
+          poster={`${BASE}/journey/keyframe-a.webp`}
           autoPlay={!reducedMotion}
           muted
           loop
           playsInline
           preload="metadata"
         >
-            <source src="/video/hero.mp4" type="video/mp4" />
+            <source src={`${BASE}/video/hero.mp4`} type="video/mp4" />
           </video>
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-b from-night/70 via-night/20 to-night" />

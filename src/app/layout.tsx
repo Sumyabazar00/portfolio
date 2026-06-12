@@ -31,7 +31,10 @@ const instrumentSerif = Instrument_Serif({
   style: "italic",
 });
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sumyabazar00.github.io"),
   title: "Sumiyabazar — Fullstack Engineer",
   description:
     "Fullstack engineer in Ulaanbaatar, Mongolia. I ship production platforms solo: insurance ecosystems, real-money gaming, AI-driven claims. Go, TypeScript, Vue, React, PostgreSQL.",
@@ -39,7 +42,7 @@ export const metadata: Metadata = {
     title: "Sumiyabazar — Fullstack Engineer",
     description:
       "A night drive through the platforms I build. Insurance ecosystems, real-money gaming, AI claims — shipped solo, running in production.",
-    images: ["/journey/keyframe-a.webp"],
+    images: [`${basePath}/journey/keyframe-a.webp`],
   },
 };
 
