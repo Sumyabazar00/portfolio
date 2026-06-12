@@ -6,20 +6,13 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
+  type MotionValue,
 } from "framer-motion";
 import { skillSigns } from "@/lib/content";
 import WordReveal from "@/components/word-reveal";
 
 export default function Highway() {
-  const ref = useRef<HTMLElement>(null);
   const reducedMotion = useReducedMotion();
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end end"],
-  });
-  const trackX = useTransform(scrollYProgress, [0.05, 0.95], ["4%", "-62%"]);
-  const lineY = useTransform(scrollYProgress, [0, 1], [0, -1400]);
 
   if (reducedMotion) {
     return (
@@ -34,33 +27,71 @@ export default function Highway() {
     );
   }
 
+  return <HighwayStack />;
+}
+
+function HighwayStack() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
   return (
-    <section id="highway" ref={ref} className="relative h-[320vh] bg-night">
-      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
-        <motion.div
-          aria-hidden="true"
-          className="road-line absolute left-1/2 top-0 h-[200%] w-[3px] -translate-x-1/2 opacity-[0.07]"
-          style={{ y: lineY }}
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(91,130,255,0.07),transparent_60%)]"
-        />
+    <section
+      id="highway"
+      className="relative bg-night px-6 pt-28 pb-[14vh] md:pt-36"
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(91,130,255,0.06),transparent_55%)]"
+      />
 
-        <div className="px-6">
-          <SectionHeader />
-        </div>
+      <div className="relative">
+        <SectionHeader />
 
-        <motion.div
-          className="mt-14 flex gap-6 pl-6 md:pl-[10vw] will-change-transform"
-          style={{ x: trackX }}
-        >
-          {skillSigns.map((s) => (
-            <SignCard key={s.exit} sign={s} wide />
+        <div ref={containerRef} className="relative mt-12">
+          {skillSigns.map((s, i) => (
+            <StackCard
+              key={s.exit}
+              sign={s}
+              index={i}
+              total={skillSigns.length}
+              progress={scrollYProgress}
+            />
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
+  );
+}
+
+function StackCard({
+  sign,
+  index,
+  total,
+  progress,
+}: {
+  sign: (typeof skillSigns)[number];
+  index: number;
+  total: number;
+  progress: MotionValue<number>;
+}) {
+  // Tall pinned wrapper gives each card a long scroll "dwell" so visitors can
+  // read it before the next card slides up and overlays it. Earlier cards
+  // scale down and sit higher, leaving a peek of the stack beneath.
+  const targetScale = 1 - (total - index) * 0.04;
+  const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
+
+  return (
+    <div className="sticky top-0 flex h-[88vh] min-h-[620px] items-center justify-center">
+      <motion.div
+        style={{ scale, top: `${index * 1.4}rem` }}
+        className="relative origin-top w-full max-w-5xl"
+      >
+        <SignCard sign={sign} index={index} total={total} stacked />
+      </motion.div>
+    </div>
   );
 }
 
@@ -86,33 +117,89 @@ function SectionHeader() {
 
 function SignCard({
   sign,
-  wide,
+  index,
+  total,
+  stacked,
 }: {
   sign: (typeof skillSigns)[number];
-  wide?: boolean;
+  index?: number;
+  total?: number;
+  stacked?: boolean;
 }) {
-  return (
-    <div
-      className={`shrink-0 rounded-2xl border border-headlight/10 bg-asphalt/90 p-6 transition-colors duration-300 hover:border-insure/40 ${
-        wide ? "w-[280px] md:w-[340px]" : ""
-      }`}
-    >
-      <div className="flex items-baseline justify-between border-b border-headlight/10 pb-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-fog">
-          Exit {sign.exit}
-        </span>
-        <span className="font-display text-lg font-semibold text-headlight">
-          {sign.title}
-        </span>
+  if (!stacked) {
+    // Reduced-motion / grid fallback — original compact card.
+    return (
+      <div className="rounded-2xl border border-headlight/10 bg-asphalt/90 p-6 transition-colors duration-300 hover:border-insure/40">
+        <div className="flex items-baseline justify-between border-b border-headlight/10 pb-3">
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-fog">
+            Exit {sign.exit}
+          </span>
+          <span className="font-display text-lg font-semibold text-headlight">
+            {sign.title}
+          </span>
+        </div>
+        <ul className="mt-4 space-y-2.5">
+          {sign.items.map((item) => (
+            <li
+              key={item}
+              className="flex items-center gap-2.5 text-sm text-fog"
+            >
+              <span
+                className="h-1 w-4 rounded-full bg-insure/50"
+                aria-hidden="true"
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
-      <ul className="mt-4 space-y-2.5">
+    );
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-[28px] border border-white/[0.07] bg-gradient-to-b from-[#0f1117] to-[#08090e] p-8 shadow-2xl shadow-black/60 md:p-12">
+      {/* top accent + faint drive-blue glow + exit watermark */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-insure/70 to-transparent"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 left-1/2 h-48 w-2/3 -translate-x-1/2 rounded-full bg-insure/10 blur-3xl"
+      />
+      <span
+        aria-hidden="true"
+        className="font-display pointer-events-none absolute -right-3 -top-8 select-none text-[8rem] font-bold leading-none text-headlight/[0.04] md:text-[11rem]"
+      >
+        {sign.exit}
+      </span>
+
+      <div className="relative flex items-end justify-between gap-4 border-b border-white/[0.07] pb-6">
+        <div>
+          <span className="font-mono text-[11px] uppercase tracking-[0.35em] text-insure">
+            Exit {sign.exit}
+            {typeof index === "number" && typeof total === "number" && (
+              <span className="text-fog/50"> / {String(total).padStart(2, "0")}</span>
+            )}
+          </span>
+          <h3 className="font-display mt-2.5 text-3xl font-semibold text-headlight md:text-4xl">
+            {sign.title}
+          </h3>
+        </div>
+        <span
+          aria-hidden="true"
+          className="hidden h-3 w-3 shrink-0 rounded-full bg-insure shadow-[0_0_18px_5px_rgba(91,130,255,0.55)] md:block"
+        />
+      </div>
+
+      <ul className="relative mt-7 grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2">
         {sign.items.map((item) => (
           <li
             key={item}
-            className="flex items-center gap-2.5 text-sm text-fog"
+            className="flex items-center gap-3.5 text-lg font-medium text-headlight/90 md:text-xl"
           >
             <span
-              className="h-1 w-4 rounded-full bg-insure/50"
+              className="h-1.5 w-6 shrink-0 rounded-full bg-insure"
               aria-hidden="true"
             />
             {item}
